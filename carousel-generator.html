@@ -127,11 +127,24 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* SAVE BAR */
+.save-bar{display:flex;align-items:center;gap:8px;}
+.save-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 11px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.save-btn:hover{border-color:#555;color:var(--text);}
+.save-btn.save-ok{border-color:#00e676;color:#00e676;}
+.save-status{font-size:10px;color:var(--muted);letter-spacing:.5px;min-width:80px;}
 </style>
 </head>
 <body>
 <header>
   <span class="logo">Carousel Generator</span>
+  <div class="save-bar">
+    <span class="save-status" id="save-status"></span>
+    <button class="save-btn" onclick="exportProject()">⬇ Salvar Projeto</button>
+    <button class="save-btn" onclick="document.getElementById('import-file').click()">↑ Abrir Projeto</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importProject(event)">
+  </div>
 </header>
 
 <div class="app">
@@ -376,6 +389,7 @@ function applyText() {
   thumbCs = new Array(slides.length).fill(null);
   renderAll();
   buildImageSlots();
+  autoSave();
 }
 
 // ── SETTINGS ──
@@ -1070,6 +1084,7 @@ function triggerPhoto(){
       document.getElementById('photo-name').textContent=f.name;
       delete imgCache['__brand__'];
       renderAll();
+      autoSave();
     };
     r.readAsDataURL(f);
   };
@@ -1113,7 +1128,7 @@ function reorderImgs(from,to){
   const imgs=slides.map(s=>s.image);
   const moved=imgs.splice(from,1)[0]; imgs.splice(to,0,moved);
   imgs.forEach((img,i)=>{slides[i].image=img;}); imgCache={};
-  buildImageSlots(); renderAll();
+  buildImageSlots(); renderAll(); autoSave();
 }
 function pickImage(idx){
   const inp=document.createElement('input'); inp.type='file'; inp.accept='image/png,image/jpeg,image/webp';
@@ -1129,12 +1144,13 @@ function pickImage(idx){
         const s=S();
         if(thumbCs[idx]){renderSlide(thumbCs[idx],slides[idx],idx,s);updateThumb(idx,thumbCs[idx]);}
       });
+      autoSave();
     };
     r.readAsDataURL(f);
   };
   inp.click();
 }
-function clearImg(idx){slides[idx].image=null;buildImageSlots();if(idx===currentSlide)renderCurrent();}
+function clearImg(idx){slides[idx].image=null;buildImageSlots();if(idx===currentSlide)renderCurrent();autoSave();}
 
 // ── EXPORT ──
 function dataURLtoBlob(dataURL) {
@@ -1249,6 +1265,7 @@ function clearAll(){
   document.getElementById('canvas-wrap').style.display='none';
   document.getElementById('strip').innerHTML='<div style="color:var(--muted);font-size:11px;display:flex;align-items:center;padding:0 4px">Nenhum slide</div>';
   document.getElementById('img-slots').innerHTML='<p style="color:var(--muted);font-size:12px">Aplique o texto primeiro.</p>';
+  autoSave();
 }
 
 // ── AI IMAGE GENERATION ──
@@ -1344,6 +1361,7 @@ function applyImageToSlide(idx, dataURL) {
   if (old) delete imgCache[old];
   slides[idx].image = dataURL;
   delete imgCache[dataURL];
+  autoSave();
 }
 
 function friendlyError(msg) {
@@ -1433,6 +1451,146 @@ function showAiError(msg) {
   document.getElementById('ai-preview-wrap').innerHTML = `<div class="ai-error">⚠ ${msg}</div>`;
 }
 
+// ── SAVE / LOAD ──
+const STORAGE_KEY = 'carousel_project_v1';
+let autoSaveTimer = null;
+
+function collectState() {
+  return {
+    v: 1,
+    template: currentTemplate,
+    batchText: document.getElementById('batch-text').value,
+    slides: slides.map(s => ({ title: s.title, body: s.body, image: s.image })),
+    currentSlide,
+    brandPhoto,
+    settings: {
+      brandName:    document.getElementById('brand-name').value,
+      brandHandle:  document.getElementById('brand-handle').value,
+      brandPos:     document.getElementById('brand-pos').value,
+      slideSize:    document.getElementById('slide-size').value,
+      pillColor1:   document.getElementById('pill-color1').value,
+      pillColor2:   document.getElementById('pill-color2').value,
+      titleColor:   document.getElementById('title-color').value,
+      bodyColor:    document.getElementById('body-color').value,
+      bgColor:      document.getElementById('bg-color').value,
+      titleFont:    document.getElementById('title-font').value,
+      titleSize:    document.getElementById('title-size').value,
+      bodySize:     document.getElementById('body-size').value,
+      overlay:      document.getElementById('overlay').value,
+      showNum:      document.getElementById('show-num').value,
+      poweredBy:    document.getElementById('powered-by').value,
+      copyright:    document.getElementById('copyright-text').value,
+      arrasta:      document.getElementById('arrasta-text').value,
+      ctaText:      document.getElementById('cta-text').value,
+    }
+  };
+}
+
+function applyState(state) {
+  if (!state || state.v !== 1) return false;
+
+  // Set template without triggering renderAll (slides not loaded yet)
+  currentTemplate = state.template || 'mkt';
+  ['mkt','alt','twt'].forEach(x => document.getElementById('tpl-'+x).classList.toggle('active', x===currentTemplate));
+
+  document.getElementById('batch-text').value = state.batchText || '';
+
+  const cfg = state.settings || {};
+  if (cfg.brandName   !== undefined) document.getElementById('brand-name').value    = cfg.brandName;
+  if (cfg.brandHandle !== undefined) document.getElementById('brand-handle').value  = cfg.brandHandle;
+  if (cfg.brandPos    !== undefined) document.getElementById('brand-pos').value     = cfg.brandPos;
+  if (cfg.slideSize   !== undefined) document.getElementById('slide-size').value    = cfg.slideSize;
+  if (cfg.pillColor1  !== undefined) document.getElementById('pill-color1').value   = cfg.pillColor1;
+  if (cfg.pillColor2  !== undefined) document.getElementById('pill-color2').value   = cfg.pillColor2;
+  if (cfg.titleColor  !== undefined) document.getElementById('title-color').value   = cfg.titleColor;
+  if (cfg.bodyColor   !== undefined) document.getElementById('body-color').value    = cfg.bodyColor;
+  if (cfg.bgColor     !== undefined) document.getElementById('bg-color').value      = cfg.bgColor;
+  if (cfg.titleFont   !== undefined) document.getElementById('title-font').value    = cfg.titleFont;
+  if (cfg.titleSize   !== undefined) { document.getElementById('title-size').value  = cfg.titleSize; document.getElementById('ts-val').textContent = cfg.titleSize + 'px'; }
+  if (cfg.bodySize    !== undefined) { document.getElementById('body-size').value   = cfg.bodySize;  document.getElementById('bs-val').textContent = cfg.bodySize  + 'px'; }
+  if (cfg.overlay     !== undefined) { document.getElementById('overlay').value     = cfg.overlay;   document.getElementById('ov-val').textContent = cfg.overlay   + '%'; }
+  if (cfg.showNum     !== undefined) document.getElementById('show-num').value      = cfg.showNum;
+  if (cfg.poweredBy   !== undefined) document.getElementById('powered-by').value    = cfg.poweredBy;
+  if (cfg.copyright   !== undefined) document.getElementById('copyright-text').value= cfg.copyright;
+  if (cfg.arrasta     !== undefined) document.getElementById('arrasta-text').value  = cfg.arrasta;
+  if (cfg.ctaText     !== undefined) document.getElementById('cta-text').value      = cfg.ctaText;
+
+  if (state.brandPhoto) {
+    brandPhoto = state.brandPhoto;
+    document.getElementById('photo-prev').innerHTML = `<img src="${brandPhoto}">`;
+    document.getElementById('photo-name').textContent = 'Foto restaurada';
+  }
+
+  if (state.slides && state.slides.length) {
+    slides = state.slides.map(s => ({ title: s.title, body: s.body, image: s.image || null }));
+    currentSlide = Math.min(state.currentSlide || 0, slides.length - 1);
+    thumbCs = new Array(slides.length).fill(null);
+    imgCache = {};
+    renderAll();
+    buildImageSlots();
+  }
+
+  return true;
+}
+
+function autoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    try {
+      const state = collectState();
+      // try with images first
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch(e) {
+        // quota exceeded — save without images
+        const slim = { ...state, slides: state.slides.map(s => ({ ...s, image: null })), brandPhoto: null };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
+        setSaveStatus('salvo sem imagens (limite de espaço)', false);
+        return;
+      }
+      setSaveStatus('salvo automaticamente', false);
+    } catch(e) { /* silent */ }
+  }, 1200);
+}
+
+function setSaveStatus(msg, ok) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  if (ok) { el.style.color = '#00e676'; setTimeout(() => { el.textContent = ''; el.style.color = ''; }, 3000); }
+  else { el.style.color = ''; setTimeout(() => { el.textContent = ''; }, 4000); }
+}
+
+function exportProject() {
+  const state = collectState();
+  const json = JSON.stringify(state);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `carousel_${date}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setSaveStatus('✓ projeto salvo!', true);
+}
+
+function importProject(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const state = JSON.parse(ev.target.result);
+      if (applyState(state)) {
+        // save immediately (no debounce) so a reload keeps the imported state
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+        setSaveStatus('✓ projeto carregado!', true);
+      }
+      else setSaveStatus('arquivo inválido', false);
+    } catch(err) { setSaveStatus('erro ao ler arquivo', false); }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
 document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')navigate(1);if(e.key==='ArrowLeft')navigate(-1);});
 
 window.onload=()=>{
@@ -1440,33 +1598,44 @@ window.onload=()=>{
   const savedKey = localStorage.getItem('gemini-key');
   if (savedKey) document.getElementById('ai-key').value = savedKey;
   document.getElementById('ai-key').addEventListener('change', e => localStorage.setItem('gemini-key', e.target.value));
+
+  // Auto-save on any settings input change
+  document.querySelectorAll('input,select,textarea').forEach(el => {
+    if (el.id === 'ai-key' || el.id === 'import-file' || el.id === 'ai-model-custom') return;
+    el.addEventListener('input', autoSave);
+    el.addEventListener('change', autoSave);
+  });
+
+  // Restore last session
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const state = JSON.parse(saved);
+      if (applyState(state)) { setSaveStatus('sessão restaurada', false); return; }
+    }
+  } catch(e) { /* start fresh */ }
+
   document.getElementById('batch-text').value=
-`Como seu mundo fica pequeno quando você para de aprender.
-Existe uma razão pela qual pessoas curiosas sempre parecem ter mais sorte.
+`Como usar o Carousel Generator
+Este é um exemplo de carrossel. Cada bloco separado por linha vazia vira um slide. A primeira linha é o título, o restante é o corpo. Clique em ▶ Aplicar Texto para gerar.
 
-Você não vê o mundo. Você vê exatamente o seu filtro.
-Seu cérebro decide o que entra e o que vira ruído. O que você não entende, você tende a nem notar.
+Cole o texto do seu carrossel aqui
+Cada bloco = 1 slide. Linha 1 = título. Linhas seguintes = corpo do slide. Separe os slides com uma linha em branco.
 
-Oportunidade não grita. Ela passa despercebida.
-Trabalho melhor, dinheiro melhor, relações melhores... quase sempre parecem "sorte" pra quem não tem repertório.
+O 1º slide é sempre a Capa
+Ela recebe destaque visual e imagem de fundo. Capriche no título — é o stop-scroll do carrossel.
 
-Você confunde "não dá" com "não sei como".
-Quando seu saber é curto, suas opções ficam ridículas: ou aguenta, ou desiste.
+Personalize na aba Branding
+Adicione sua foto de perfil, nome e @. Use a aba Design para trocar cores, fontes e formato (quadrado, retrato, story).
 
-Seu vocabulário é a borda do seu universo.
-Sem palavras, você não forma perguntas. Sem perguntas, você não encontra caminhos.
+Adicione imagens na aba Imagens
+Clique em cada slot para fazer upload. Ou use a aba IA para gerar imagens automaticamente com base no texto de cada slide.
 
-A expansão começa com 3 perguntas brutais.
-Como isso funciona de verdade? Qual variável mais move o resultado? Quem faz bem e por quê?
+O último slide é sempre o CTA
+Use para pedir seguir, salvar ou comentar. Este slide recebe formatação diferenciada automaticamente.
 
-Informação não muda vida. Modelo muda.
-Aprender não é colecionar dicas. É trocar a lógica interna.
-
-Seu "universo" cresce quando você muda a dieta mental.
-Se você consome só o que concorda, seu mundo vira um quarto fechado.
-
-Você não precisa de sorte. Precisa de repertório.
-Escolha um assunto que te trava e estude por 30 dias. Faça sínteses curtas, aplique uma coisa por semana.`;
+Salve seu projeto quando quiser
+Use os botões no topo: Salvar Projeto exporta um .json completo com tudo. Abrir Projeto carrega de volta. O auto-save guarda tudo no navegador enquanto você trabalha.`;
 };
 </script>
 </body>
