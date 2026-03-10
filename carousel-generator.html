@@ -1285,9 +1285,9 @@ function buildSlidePrompt(idx) {
     ? 'Full-bleed hero background image for the cover of a social media carousel.'
     : 'Horizontal banner image for an inner slide section of a social media carousel.';
 
-  const realism = 'Photorealistic. Shot on professional camera (Canon EOS R5, 85mm lens). Real natural skin texture if people are present. Natural lighting. Hyperrealistic, 8K detail. Absolutely no AI artifacts, no plastic skin, no uncanny valley, no watermarks, no text, no letters.';
+  const realism = 'Photorealistic. Shot on professional camera (Canon EOS R5, 85mm lens). Real natural skin texture if people are present. Natural lighting. Hyperrealistic, 8K detail. No AI artifacts, no plastic skin, no uncanny valley.';
 
-  return `${role} Carousel topic: "${carouselTheme}". ${slideDetail} Visual style: ${style}. Aspect ratio: ${arHint}. ${realism}`;
+  return `PURE VISUAL IMAGE ONLY — NO TEXT, NO LETTERS, NO WORDS ANYWHERE IN THE IMAGE. ${role} Carousel topic: "${carouselTheme}". ${slideDetail} Visual style: ${style}. Aspect ratio: ${arHint}. ${realism}`;
 }
 
 async function callImageAPI(key, model, prompt, slideIdx) {
@@ -1299,11 +1299,13 @@ async function callImageAPI(key, model, prompt, slideIdx) {
 
   const isImagen = model.startsWith('imagen-');
 
+  const negativePrompt = 'text, letters, words, typography, watermark, caption, title, label, sign, writing, font, alphabet, numbers, digits, subtitles, overlay text, quote, inscription';
+
   if (isImagen) {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${key}`,
       { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ instances:[{prompt}], parameters:{sampleCount:1, aspectRatio:ar} }) }
+        body: JSON.stringify({ instances:[{prompt}], parameters:{sampleCount:1, aspectRatio:ar, negativePrompt} }) }
     );
     const json = await res.json();
     if (!res.ok) throw new Error(json.error?.message || `HTTP ${res.status}`);
