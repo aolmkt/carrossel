@@ -6,7 +6,7 @@
 <title>Carousel Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root { --bg:#0a0a0a; --surface:#111; --surface2:#1a1a1a; --border:#2a2a2a; --accent:#e8294a; --text:#f0f0f0; --muted:#555; }
+:root { --bg:#0a0a0a; --surface:#111; --surface2:#1a1a1a; --border:#2a2a2a; --accent:#e8294a; --text:#f0f0f0; --muted:#555; --grad-accent:linear-gradient(90deg,#f97316,#7c3aed); --green:#00e676; --orange:#f97316; --sidebar-w:340px; --bg-strip:#0d0d0d; }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;overflow-y:auto;}
 header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;flex-wrap:wrap;gap:8px;}
@@ -18,12 +18,12 @@ header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;alig
 /* PANEL */
 .panel{background:var(--surface);border-top:1px solid var(--border);display:flex;flex-direction:column;overflow:visible;}
 .tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
-.tab{flex:1;padding:11px 0;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:color .2s;position:relative;}
+.tab{flex:1;padding:11px 0;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:color .2s;position:relative;}
 .tab.active{color:var(--text);}
 .tab.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:var(--accent);}
 .tab:hover:not(.active){color:#aaa;}
 .panel-body{flex:none;overflow-y:visible;padding:16px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-.lbl{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;margin-top:14px;}
+.lbl{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;margin-top:14px;}
 .lbl:first-child{margin-top:0;}
 
 /* Template Cards */
@@ -47,7 +47,7 @@ textarea::placeholder,input[type=text]::placeholder{color:var(--muted);}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(232,41,74,.35);}
 .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
 .btn-secondary:hover{border-color:#555;}
-.btn-sync{background:#0a1a0a;color:#00e676;border:1px solid #00e67630;}
+.btn-sync{background:#0a1a0a;color:var(--green);border:1px solid #00e67630;}
 .btn-sync:hover{border-color:#00e676;}
 
 .row{display:flex;gap:8px;}
@@ -80,12 +80,12 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 .clear-img{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px;font-size:12px;flex-shrink:0;}
 .clear-img:hover{color:var(--accent);}
 
-.strip{padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0;overflow-x:auto;display:flex;gap:7px;background:#0d0d0d;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.strip{padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0;overflow-x:auto;display:flex;gap:7px;background:var(--bg-strip);scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
 .thumb{flex-shrink:0;width:52px;height:52px;border-radius:5px;background:var(--surface2);border:2px solid var(--border);cursor:pointer;overflow:hidden;transition:all .15s;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--muted);position:relative;}
 .thumb.active{border-color:var(--accent);}
 .thumb canvas{width:100%;height:100%;display:block;}
 .cover-b{position:absolute;top:2px;left:2px;background:var(--accent);color:white;font-size:7px;font-weight:800;padding:1px 3px;border-radius:2px;z-index:2;}
-.cta-b{position:absolute;top:2px;right:2px;background:#f97316;color:white;font-size:7px;font-weight:800;padding:1px 3px;border-radius:2px;z-index:2;}
+.cta-b{position:absolute;top:2px;right:2px;background:var(--orange);color:white;font-size:7px;font-weight:800;padding:1px 3px;border-radius:2px;z-index:2;}
 
 /* CANVAS AREA */
 .canvas-area{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:#060606;padding:16px;gap:14px;overflow:visible;position:relative;}
@@ -98,7 +98,7 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 .slide-info{font-size:12px;color:var(--muted);min-width:80px;text-align:center;}
 .slide-type{font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 8px;border-radius:10px;margin-top:3px;text-align:center;}
 .slide-type.cover{background:var(--accent);color:white;}
-.slide-type.cta{background:#f97316;color:white;}
+.slide-type.cta{background:var(--orange);color:white;}
 .slide-type.content{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
 
 .export-bar{position:relative;top:auto;right:auto;display:flex;gap:7px;align-self:flex-end;}
@@ -144,8 +144,27 @@ header{padding:14px 28px;flex-wrap:nowrap;}
 .save-bar{display:flex;align-items:center;gap:8px;}
 .save-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 11px;cursor:pointer;transition:all .2s;white-space:nowrap;}
 .save-btn:hover{border-color:#555;color:var(--text);}
-.save-btn.save-ok{border-color:#00e676;color:#00e676;}
+.save-btn.save-ok{border-color:var(--green);color:var(--green);}
 .save-status{font-size:10px;color:var(--muted);letter-spacing:.5px;min-width:80px;}
+
+/* Active state for touch */
+.btn:active,.nav-btn:active,.exp-btn:active,.save-btn:active{transform:scale(0.97);opacity:0.85;}
+
+/* Focus ring */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 18px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;line-height:1.4;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.5);pointer-events:none;animation:toastIn .25s ease,toastOut .3s ease 2.7s forwards;}
+.toast.error{background:#2a0a0e;color:#f87171;border:1px solid #7f1d1d;}
+.toast.success{background:#0a2a0e;color:var(--green);border:1px solid #14532d;}
+.toast.info{background:var(--surface);color:var(--text);border:1px solid var(--border);}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes toastOut{from{opacity:1;}to{opacity:0;pointer-events:none;}}
+
+/* Undo/Redo buttons */
+.undo-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 10px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.undo-btn:hover:not(:disabled){border-color:#555;color:var(--text);}
+.undo-btn:disabled{opacity:.3;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -153,8 +172,10 @@ header{padding:14px 28px;flex-wrap:nowrap;}
   <span class="logo">Carousel Generator</span>
   <div class="save-bar">
     <span class="save-status" id="save-status"></span>
-    <button class="save-btn" onclick="exportProject()">⬇ Salvar Projeto</button>
-    <button class="save-btn" onclick="document.getElementById('import-file').click()">↑ Abrir Projeto</button>
+    <button class="undo-btn" id="undo-btn" onclick="undo()" disabled aria-label="Desfazer">⟲ Undo</button>
+    <button class="undo-btn" id="redo-btn" onclick="redo()" disabled aria-label="Refazer">⟳ Redo</button>
+    <button class="save-btn" onclick="exportProject()" aria-label="Salvar projeto">⬇ Salvar Projeto</button>
+    <button class="save-btn" onclick="document.getElementById('import-file').click()" aria-label="Abrir projeto">↑ Abrir Projeto</button>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importProject(event)">
   </div>
 </header>
@@ -212,8 +233,8 @@ header{padding:14px 28px;flex-wrap:nowrap;}
         </div>
       </div>
       <div class="lbl">Identidade</div>
-      <div class="fg"><label>Nome</label><input type="text" id="brand-name" placeholder="Seu nome" oninput="renderCurrent()"></div>
-      <div class="fg"><label>@</label><input type="text" id="brand-handle" placeholder="@seuhandle" oninput="renderCurrent()"></div>
+      <div class="fg"><label>Nome</label><input type="text" id="brand-name" placeholder="Seu nome" oninput="debouncedRender()"></div>
+      <div class="fg"><label>@</label><input type="text" id="brand-handle" placeholder="@seuhandle" oninput="debouncedRender()"></div>
       <div class="fg">
         <label>Posição do rodapé</label>
         <select id="brand-pos" onchange="renderCurrent()">
@@ -239,12 +260,12 @@ header{padding:14px 28px;flex-wrap:nowrap;}
 
       <div class="lbl">Cores de Destaque</div>
       <div class="row">
-        <div class="fg"><label>Cor 1 (pill)</label><input type="color" id="pill-color1" value="#f97316" oninput="renderCurrent()"></div>
-        <div class="fg"><label>Cor 2 (pill)</label><input type="color" id="pill-color2" value="#7c3aed" oninput="renderCurrent()"></div>
+        <div class="fg"><label>Cor 1 (pill)</label><input type="color" id="pill-color1" value="#f97316" oninput="debouncedRender()"></div>
+        <div class="fg"><label>Cor 2 (pill)</label><input type="color" id="pill-color2" value="#7c3aed" oninput="debouncedRender()"></div>
       </div>
-      <div class="fg"><label>Cor do Título</label><input type="color" id="title-color" value="#ffffff" oninput="renderCurrent()"></div>
-      <div class="fg"><label>Cor do Corpo</label><input type="color" id="body-color" value="#999999" oninput="renderCurrent()"></div>
-      <div class="fg"><label>Cor de Fundo (slides internos)</label><input type="color" id="bg-color" value="#0d0d0d" oninput="renderCurrent()"></div>
+      <div class="fg"><label>Cor do Título</label><input type="color" id="title-color" value="#ffffff" oninput="debouncedRender()"></div>
+      <div class="fg"><label>Cor do Corpo</label><input type="color" id="body-color" value="#999999" oninput="debouncedRender()"></div>
+      <div class="fg"><label>Cor de Fundo (slides internos)</label><input type="color" id="bg-color" value="#0d0d0d" oninput="debouncedRender()"></div>
 
       <div class="lbl">Tipografia</div>
       <div class="fg">
@@ -258,15 +279,15 @@ header{padding:14px 28px;flex-wrap:nowrap;}
       </div>
       <div class="fg">
         <label>Tamanho do Título <span id="ts-val" style="color:#f97316">80px</span></label>
-        <input type="range" id="title-size" min="40" max="120" value="80" oninput="document.getElementById('ts-val').textContent=this.value+'px';renderCurrent()">
+        <input type="range" id="title-size" min="40" max="120" value="80" oninput="document.getElementById('ts-val').textContent=this.value+'px';debouncedRender()">
       </div>
       <div class="fg">
         <label>Tamanho do Corpo <span id="bs-val" style="color:#f97316">36px</span></label>
-        <input type="range" id="body-size" min="18" max="56" value="36" oninput="document.getElementById('bs-val').textContent=this.value+'px';renderCurrent()">
+        <input type="range" id="body-size" min="18" max="56" value="36" oninput="document.getElementById('bs-val').textContent=this.value+'px';debouncedRender()">
       </div>
       <div class="fg">
         <label>Overlay da Imagem (capa) <span id="ov-val" style="color:#f97316">55%</span></label>
-        <input type="range" id="overlay" min="0" max="90" value="55" oninput="document.getElementById('ov-val').textContent=this.value+'%';renderCurrent()">
+        <input type="range" id="overlay" min="0" max="90" value="55" oninput="document.getElementById('ov-val').textContent=this.value+'%';debouncedRender()">
       </div>
       <div class="fg">
         <label>Numeração dos Slides</label>
@@ -277,10 +298,10 @@ header{padding:14px 28px;flex-wrap:nowrap;}
       </div>
 
       <div class="lbl">Textos Fixos</div>
-      <div class="fg"><label>Powered by</label><input type="text" id="powered-by" placeholder="" oninput="renderCurrent()"></div>
-      <div class="fg"><label>Copyright</label><input type="text" id="copyright-text" placeholder="Copyright © 2026" oninput="renderCurrent()"></div>
-      <div class="fg"><label>Rodapé dos slides</label><input type="text" id="arrasta-text" placeholder="Arrasta para o lado >" oninput="renderCurrent()"></div>
-      <div class="fg"><label>Texto CTA (último slide)</label><input type="text" id="cta-text" placeholder="Siga o perfil para mais conteúdos como esse!" oninput="renderCurrent()"></div>
+      <div class="fg"><label>Powered by</label><input type="text" id="powered-by" placeholder="" oninput="debouncedRender()"></div>
+      <div class="fg"><label>Copyright</label><input type="text" id="copyright-text" placeholder="Copyright © 2026" oninput="debouncedRender()"></div>
+      <div class="fg"><label>Rodapé dos slides</label><input type="text" id="arrasta-text" placeholder="Arrasta para o lado >" oninput="debouncedRender()"></div>
+      <div class="fg"><label>Texto CTA (último slide)</label><input type="text" id="cta-text" placeholder="Siga o perfil para mais conteúdos como esse!" oninput="debouncedRender()"></div>
     </div>
 
     <!-- IMAGENS -->
@@ -298,6 +319,7 @@ header{padding:14px 28px;flex-wrap:nowrap;}
       <div class="fg">
         <input type="password" id="ai-key" placeholder="AIzaSy..." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 12px;outline:none;">
         <p class="hint">Obtenha em <strong>ai.google.dev</strong> → Get API Key (grátis)</p>
+        <p class="hint" style="margin-top:5px">⚠ Sua chave é salva localmente neste dispositivo. Não use em computadores compartilhados.</p>
       </div>
       <div class="lbl">Modelo</div>
       <div class="fg">
@@ -347,23 +369,24 @@ header{padding:14px 28px;flex-wrap:nowrap;}
   <!-- CANVAS -->
   <div class="canvas-area">
     <div class="export-bar">
-      <button class="exp-btn exp-one" onclick="exportCurrent()">⬇ Este Slide</button>
-      <button class="exp-btn exp-all" onclick="exportAll()">⬇ Exportar Todos</button>
+      <button class="exp-btn exp-one" onclick="exportCurrent()" aria-label="Exportar slide atual">⬇ Este Slide</button>
+      <button class="exp-btn exp-all" onclick="exportAll()" aria-label="Exportar todos os slides">⬇ Exportar Todos</button>
     </div>
     <div class="empty" id="empty-state">
       <div class="empty-icon">🎨</div>
-      <h3>Nenhum Slide</h3>
-      <p>Cole seu texto na aba Texto e clique em Aplicar.</p>
+      <h3>Comece aqui</h3>
+      <p>Cole o conteúdo do carrossel na aba Texto, no formato: Título | Corpo de texto, um slide por bloco separado por linha em branco. Depois clique em Aplicar.</p>
     </div>
     <div id="canvas-wrap" style="display:none;flex-direction:column;align-items:center;gap:16px">
       <div class="canvas-wrap"><canvas id="main-canvas"></canvas></div>
       <div class="nav-row">
-        <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">←</button>
+        <button class="nav-btn" id="prev-btn" onclick="navigate(-1)" aria-label="Slide anterior">←</button>
         <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
           <div class="slide-info" id="slide-info">1 / 1</div>
           <div class="slide-type" id="slide-type">CONTEÚDO</div>
         </div>
-        <button class="nav-btn" id="next-btn" onclick="navigate(1)">→</button>
+        <button class="nav-btn" id="next-btn" onclick="navigate(1)" aria-label="Próximo slide">→</button>
+        <button class="nav-btn" id="dup-btn" onclick="duplicateSlide()" title="Duplicar slide" aria-label="Duplicar slide">⧉</button>
       </div>
     </div>
   </div>
@@ -373,10 +396,70 @@ header{padding:14px 28px;flex-wrap:nowrap;}
 // ── STATE ──
 let slides = [], currentSlide = 0, thumbCs = [], imgCache = {}, brandPhoto = null, currentTemplate = 'mkt', dragSrc = null;
 
+// ── HISTORY (Undo/Redo) ──
+let history = [], historyIndex = -1;
+function saveHistory() {
+  // Truncate any forward history
+  history = history.slice(0, historyIndex + 1);
+  history.push(JSON.stringify(slides));
+  if (history.length > 20) history.shift();
+  historyIndex = history.length - 1;
+  updateUndoRedoBtns();
+}
+function updateUndoRedoBtns() {
+  const undoBtn = document.getElementById('undo-btn');
+  const redoBtn = document.getElementById('redo-btn');
+  if (undoBtn) undoBtn.disabled = historyIndex <= 0;
+  if (redoBtn) redoBtn.disabled = historyIndex >= history.length - 1;
+}
+function undo() {
+  if (historyIndex <= 0) return;
+  historyIndex--;
+  slides = JSON.parse(history[historyIndex]);
+  currentSlide = Math.min(currentSlide, slides.length - 1);
+  thumbCs = new Array(slides.length).fill(null);
+  imgCache = {};
+  renderAll(); buildImageSlots();
+  updateUndoRedoBtns();
+}
+function redo() {
+  if (historyIndex >= history.length - 1) return;
+  historyIndex++;
+  slides = JSON.parse(history[historyIndex]);
+  currentSlide = Math.min(currentSlide, slides.length - 1);
+  thumbCs = new Array(slides.length).fill(null);
+  imgCache = {};
+  renderAll(); buildImageSlots();
+  updateUndoRedoBtns();
+}
+
+// ── DEBOUNCE ──
+function debounce(fn, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+const debouncedRender = debounce(() => renderCurrent(), 400);
+
+// ── TOAST ──
+function showToast(msg, type = 'error') {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
+}
+
 // ── TABS ──
 function switchTab(n) {
   ['texto','branding','design','imagens','ia'].forEach(t => document.getElementById('tab-'+t).style.display = t===n?'':'none');
   document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['texto','branding','design','imagens','ia'][i]===n));
+  const panel = document.getElementById('tab-' + n);
+  if (panel) panel.scrollTop = 0;
 }
 
 // ── TEMPLATE ──
@@ -389,16 +472,23 @@ function setTemplate(t) {
 // ── PARSE ──
 function applyText() {
   const raw = document.getElementById('batch-text').value.trim();
-  if (!raw) return;
+  if (!raw) {
+    showToast('Cole o texto no formato correto: Título | Corpo', 'error');
+    return;
+  }
   const blocks = raw.split(/\n{2,}/);
   const parsed = blocks.map(b => {
     const lines = b.split('\n').map(l=>l.trim()).filter(Boolean);
     return { title: lines[0]||'', body: lines.slice(1).join('\n')||'' };
   }).filter(s=>s.title);
-  if (!parsed.length) return;
+  if (!parsed.length) {
+    showToast('Cole o texto no formato correto: Título | Corpo', 'error');
+    return;
+  }
   slides = parsed.map((p,i) => ({ ...p, image: slides[i]?.image||null }));
   currentSlide = 0;
   thumbCs = new Array(slides.length).fill(null);
+  saveHistory();
   renderAll();
   buildImageSlots();
   autoSave();
@@ -992,13 +1082,26 @@ function renderSlide(canvas, slide, index, s) {
 
 function preloadAll(cb) {
   const toLoad=[];
-  slides.forEach(sl => { if(sl.image&&!imgCache[sl.image]) toLoad.push({k:sl.image,s:sl.image}); });
-  if(brandPhoto&&!imgCache['__brand__']) toLoad.push({k:'__brand__',s:brandPhoto});
+  slides.forEach(sl => {
+    if (sl.image) {
+      const cached = imgCache[sl.image];
+      if (!cached || !(cached.complete && cached.naturalWidth > 0)) {
+        toLoad.push({k: sl.image, s: sl.image});
+      }
+    }
+  });
+  if (brandPhoto) {
+    const cached = imgCache['__brand__'];
+    if (!cached || !(cached.complete && cached.naturalWidth > 0)) {
+      toLoad.push({k: '__brand__', s: brandPhoto});
+    }
+  }
   if(!toLoad.length){cb();return;}
   let done=0;
   toLoad.forEach(({k,s:src})=>{
     const img=new Image();
-    img.onload=img.onerror=()=>{imgCache[k]=img;done++;if(done===toLoad.length)cb();};
+    img.onload=()=>{imgCache[k]=img;done++;if(done===toLoad.length)cb();};
+    img.onerror=()=>{delete imgCache[k];done++;if(done===toLoad.length)cb();renderCurrent();};
     img.src=src;
   });
 }
@@ -1051,16 +1154,46 @@ function updateNavBtns(){
 }
 
 // ── THUMBS ──
+let thumbDragSrc = null;
 function buildThumbs(){
-  const strip=document.getElementById('strip'); strip.innerHTML='';
+  const strip=document.getElementById('strip');
+  const existing = strip.querySelectorAll('.thumb');
+  // Incremental: if count matches, just update classes; otherwise full rebuild
+  if (existing.length === slides.length) {
+    existing.forEach((div, i) => {
+      div.classList.toggle('active', i === currentSlide);
+    });
+    return;
+  }
+  strip.innerHTML='';
   slides.forEach((_,i)=>{
     const div=document.createElement('div');
     div.className='thumb'+(i===currentSlide?' active':''); div.id=`th-${i}`;
+    div.draggable=true;
     const isLast=i===slides.length-1&&slides.length>1;
     if(i===0){const b=document.createElement('div');b.className='cover-b';b.textContent='CAPA';div.appendChild(b);}
     else if(isLast){const b=document.createElement('div');b.className='cta-b';b.textContent='CTA';div.appendChild(b);}
     else div.textContent=i+1;
     div.onclick=()=>goTo(i);
+    // Drag-to-reorder
+    div.addEventListener('dragstart', e => { thumbDragSrc = i; div.style.opacity = '0.4'; e.dataTransfer.effectAllowed = 'move'; });
+    div.addEventListener('dragend', () => { div.style.opacity = ''; strip.querySelectorAll('.thumb').forEach(t => t.classList.remove('drag-over')); thumbDragSrc = null; });
+    div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+    div.addEventListener('drop', e => {
+      e.preventDefault(); div.classList.remove('drag-over');
+      if (thumbDragSrc === null || thumbDragSrc === i) return;
+      saveHistory();
+      const moved = slides.splice(thumbDragSrc, 1)[0];
+      slides.splice(i, 0, moved);
+      const movedThC = thumbCs.splice(thumbDragSrc, 1)[0];
+      thumbCs.splice(i, 0, movedThC);
+      if (currentSlide === thumbDragSrc) currentSlide = i;
+      else if (thumbDragSrc < i && currentSlide > thumbDragSrc && currentSlide <= i) currentSlide--;
+      else if (thumbDragSrc > i && currentSlide >= i && currentSlide < thumbDragSrc) currentSlide++;
+      thumbDragSrc = null;
+      renderAll(); buildImageSlots(); autoSave();
+    });
     strip.appendChild(div);
   });
 }
@@ -1082,6 +1215,17 @@ function goTo(i){
   currentSlide=i;
   document.querySelectorAll('.thumb').forEach((t,j)=>t.classList.toggle('active',j===i));
   updateCounter(); updateNavBtns(); renderCurrent();
+}
+
+// ── DUPLICATE SLIDE ──
+function duplicateSlide() {
+  if (!slides.length) return;
+  saveHistory();
+  const copy = JSON.parse(JSON.stringify(slides[currentSlide]));
+  slides.splice(currentSlide + 1, 0, copy);
+  thumbCs.splice(currentSlide + 1, 0, null);
+  currentSlide += 1;
+  renderAll(); buildImageSlots(); autoSave();
 }
 
 // ── BRANDING ──
@@ -1137,6 +1281,7 @@ function buildImageSlots(){
   });
 }
 function reorderImgs(from,to){
+  saveHistory();
   const imgs=slides.map(s=>s.image);
   const moved=imgs.splice(from,1)[0]; imgs.splice(to,0,moved);
   imgs.forEach((img,i)=>{slides[i].image=img;}); imgCache={};
@@ -1213,7 +1358,16 @@ function showModal(urls){
   const cl=document.createElement('button');
   cl.textContent='✕ Fechar';
   cl.style.cssText='background:#222;color:#aaa;border:1px solid #333;border-radius:7px;padding:7px 14px;font-family:DM Sans,sans-serif;font-weight:700;font-size:12px;cursor:pointer;';
-  cl.onclick=()=>modal.remove();
+  cl.onclick=()=>{
+    // Revoke all blob URLs to avoid memory leaks
+    modal.querySelectorAll('img').forEach(img => {
+      if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+    });
+    modal.querySelectorAll('a[href]').forEach(a => {
+      if (a.href && a.href.startsWith('blob:')) URL.revokeObjectURL(a.href);
+    });
+    modal.remove();
+  };
   bar.appendChild(cl);
 
   const body=document.createElement('div');
@@ -1603,7 +1757,14 @@ function importProject(e) {
   reader.readAsText(file);
 }
 
-document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')navigate(1);if(e.key==='ArrowLeft')navigate(-1);});
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') navigate(1);
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') { e.preventDefault(); undo(); }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Z') { e.preventDefault(); redo(); }
+});
+document.addEventListener('dragend', () => { dragSrc = null; });
+document.addEventListener('drop', e => { if (!e.defaultPrevented) dragSrc = null; });
 
 window.onload=()=>{
   // Restore API key
