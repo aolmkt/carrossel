@@ -244,19 +244,15 @@ header{padding:14px 28px;flex-wrap:nowrap;}
         </select>
       </div>
       <div class="fg">
+        <label>Tamanho do perfil <span id="ps-val" style="color:#f97316">26px</span></label>
+        <input type="range" id="profile-size" min="14" max="44" value="26" oninput="document.getElementById('ps-val').textContent=this.value+'px';renderCurrent()">
+      </div>
+      <div class="fg">
         <label>Perfil na capa</label>
         <select id="cover-profile" onchange="renderCurrent()">
           <option value="full">Completo (foto + nome + @)</option>
           <option value="photo">Só a foto</option>
           <option value="hide">Oculto</option>
-        </select>
-      </div>
-      <div class="fg">
-        <label>Posição do rodapé</label>
-        <select id="brand-pos" onchange="renderCurrent()">
-          <option value="left">Esquerdo</option>
-          <option value="center">Centralizado</option>
-          <option value="right">Direito</option>
         </select>
       </div>
       <button class="btn btn-sync" onclick="syncBranding()">⟳ Sincronizar em Todos os Slides</button>
@@ -521,7 +517,7 @@ function S() {
     template: currentTemplate,
     brandName: document.getElementById('brand-name').value.trim(),
     brandHandle: document.getElementById('brand-handle').value.trim(),
-    brandPhoto, brandPos: document.getElementById('brand-pos').value,
+    brandPhoto,
     ctaText: document.getElementById('cta-text').value || 'Siga o perfil para mais conteúdos como esse!',
     poweredBy: document.getElementById('powered-by').value,
     copyright: document.getElementById('copyright-text').value,
@@ -537,6 +533,7 @@ function S() {
     overlay: +document.getElementById('overlay').value / 100,
     showNum: document.getElementById('show-num').value === 'yes',
     footerId: document.getElementById('footer-id').value,
+    profileSize: +document.getElementById('profile-size').value,
     coverProfile: document.getElementById('cover-profile').value,
     W: w, H: h
   };
@@ -742,34 +739,37 @@ function drawProfileBlock(ctx, x, y, s, centered=false) {
   const name = s.brandName || '';
   const handle = s.brandHandle ? (s.brandHandle.startsWith('@')?s.brandHandle:'@'+s.brandHandle) : '';
 
+  const ps = s.profileSize || 26;
+  const hs = Math.round(ps * 0.77); // handle ~77% do nome
+
   if (centered) {
-    const ny = y + photoR*2 + 18;
-    ctx.font = `700 38px 'DM Sans', sans-serif`;
+    const ny = y + photoR*2 + 14;
+    ctx.font = `700 ${ps}px 'DM Sans', sans-serif`;
     ctx.textBaseline = 'top'; ctx.textAlign = 'center';
     ctx.fillStyle = 'white';
     const nw = ctx.measureText(name).width;
     ctx.fillText(name, cx, ny);
-    drawVerified(ctx, cx + nw/2 + 24, ny + 16, 16);
+    drawVerified(ctx, cx + nw/2 + Math.round(ps*0.7), ny + Math.round(ps*0.38), Math.round(ps*0.46));
     if (handle) {
-      ctx.font = `400 28px 'DM Sans', sans-serif`;
+      ctx.font = `400 ${hs}px 'DM Sans', sans-serif`;
       ctx.fillStyle = 'rgba(255,255,255,0.6)';
-      ctx.fillText(handle, cx, ny+44);
+      ctx.fillText(handle, cx, ny + Math.round(ps*1.25));
     }
     ctx.textAlign = 'left';
-    return photoR*2 + 18 + 44 + 32;
+    return photoR*2 + 14 + Math.round(ps*1.3) + (handle ? Math.round(hs*1.3) : 0);
   } else {
     const tx = cx + photoR + 14;
     const ny = y + 6;
-    ctx.font = `700 34px 'DM Sans', sans-serif`;
+    ctx.font = `700 ${ps}px 'DM Sans', sans-serif`;
     ctx.textBaseline = 'top'; ctx.textAlign = 'left';
     ctx.fillStyle = s.template==='twt' ? '#1a2a3a' : 'white';
     const nw = ctx.measureText(name).width;
     ctx.fillText(name, tx, ny);
-    drawVerified(ctx, tx + nw + 20, ny + 14, 14);
+    drawVerified(ctx, tx + nw + Math.round(ps*0.6), ny + Math.round(ps*0.38), Math.round(ps*0.42));
     if (handle) {
-      ctx.font = `400 26px 'DM Sans', sans-serif`;
+      ctx.font = `400 ${hs}px 'DM Sans', sans-serif`;
       ctx.fillStyle = s.template==='twt' ? '#555' : 'rgba(255,255,255,0.6)';
-      ctx.fillText(handle, tx, ny + 40);
+      ctx.fillText(handle, tx, ny + Math.round(ps*1.2));
     }
     return 0;
   }
@@ -796,22 +796,23 @@ function renderMKT(canvas, slide, index, s) {
     grad.addColorStop(0.45, 'rgba(0,0,0,0.4)');
     grad.addColorStop(1, 'rgba(0,0,0,0.94)');
     ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+    if (s.overlay > 0) { ctx.fillStyle=`rgba(0,0,0,${s.overlay})`; ctx.fillRect(0,0,W,H); }
     // Header
     drawHeader(ctx, W, s, true);
 
     const pad=54, textW=W-pad*2;
-    const titleLH=88, coverBodySize=32, coverBodyLH=46;
+    const titleLH=s.titleSize*1.13, coverBodyLH=s.bodySize*1.44;
     const hasBody=!!(slide.body&&slide.body.trim());
 
     // pré-calcula altura do bloco título + corpo da capa
-    ctx.font=`800 78px 'DM Sans', sans-serif`;
+    ctx.font=`800 ${s.titleSize}px 'DM Sans', sans-serif`;
     let titleLines=0;
     for(let tl of slide.title.split('\n')) titleLines+=countLines(ctx,tl,textW);
     const titleBlockH=titleLines*titleLH;
 
     let bodyLines=0;
     if(hasBody){
-      ctx.font=`400 ${coverBodySize}px 'DM Sans', sans-serif`;
+      ctx.font=`400 ${s.bodySize}px 'DM Sans', sans-serif`;
       for(let bl of slide.body.split('\n')) bodyLines+=countLines(ctx,bl,textW);
     }
     const bodyBlockH=bodyLines*coverBodyLH;
@@ -828,7 +829,7 @@ function renderMKT(canvas, slide, index, s) {
     let ty = profBottom + Math.max(14, (availBelow - textBlockH) / 2);
 
     ctx.textBaseline='top'; ctx.textAlign='center';
-    ctx.font=`800 78px 'DM Sans', sans-serif`;
+    ctx.font=`800 ${s.titleSize}px 'DM Sans', sans-serif`;
     ctx.fillStyle='white';
     for(let tl of slide.title.split('\n')){
       const n=wrapText(ctx,tl,pad,ty,textW,titleLH,'center');
@@ -836,7 +837,7 @@ function renderMKT(canvas, slide, index, s) {
     }
     if(hasBody){
       ty+=16;
-      ctx.font=`400 ${coverBodySize}px 'DM Sans', sans-serif`;
+      ctx.font=`400 ${s.bodySize}px 'DM Sans', sans-serif`;
       ctx.fillStyle='rgba(255,255,255,0.72)';
       for(let bl of slide.body.split('\n')){
         const n=wrapText(ctx,bl,pad,ty,textW,coverBodyLH,'center');
@@ -937,23 +938,24 @@ function renderAlt(canvas, slide, index, s) {
     g.addColorStop(0.4,'rgba(0,0,0,0.5)');
     g.addColorStop(1,'rgba(0,0,0,0.97)');
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    if (s.overlay > 0) { ctx.fillStyle=`rgba(0,0,0,${s.overlay})`; ctx.fillRect(0,0,W,H); }
     drawHeader(ctx,W,s,true);
     // Profile left-aligned below header
     const profY=120;
     drawProfileBlock(ctx, 54, profY, s, false);
     // Title + corpo, ancorados acima do footer
     const pad=54, textW=W-pad*2;
-    const titleLH=90, coverBodySize=32, coverBodyLH=46;
+    const titleLH=s.titleSize*1.07, coverBodyLH=s.bodySize*1.44;
     const hasBody=!!(slide.body&&slide.body.trim());
 
-    ctx.font=`800 84px 'DM Sans', sans-serif`;
+    ctx.font=`800 ${s.titleSize}px 'DM Sans', sans-serif`;
     let titleLines=0;
     for(let tl of slide.title.split('\n')) titleLines+=countLines(ctx,tl,textW);
     const titleBlockH=titleLines*titleLH;
 
     let bodyLines=0;
     if(hasBody){
-      ctx.font=`400 ${coverBodySize}px 'DM Sans', sans-serif`;
+      ctx.font=`400 ${s.bodySize}px 'DM Sans', sans-serif`;
       for(let bl of slide.body.split('\n')) bodyLines+=countLines(ctx,bl,textW);
     }
     const bodyBlockH=bodyLines*coverBodyLH;
@@ -962,13 +964,13 @@ function renderAlt(canvas, slide, index, s) {
     // sem corpo: posição original; com corpo: ancora o bloco acima do footer
     let ty = hasBody ? Math.max(H*0.6, H-120-textBlockH) : H*0.72;
 
-    ctx.font=`800 84px 'DM Sans', sans-serif`;
+    ctx.font=`800 ${s.titleSize}px 'DM Sans', sans-serif`;
     ctx.fillStyle='white'; ctx.textBaseline='top';
     for(let tl of slide.title.split('\n')){ const n=wrapText(ctx,tl,pad,ty,textW,titleLH,'left'); ty+=n*titleLH; }
 
     if(hasBody){
       ty+=14;
-      ctx.font=`400 ${coverBodySize}px 'DM Sans', sans-serif`;
+      ctx.font=`400 ${s.bodySize}px 'DM Sans', sans-serif`;
       ctx.fillStyle='rgba(255,255,255,0.72)';
       for(let bl of slide.body.split('\n')){ const n=wrapText(ctx,bl,pad,ty,textW,coverBodyLH,'left'); ty+=n*coverBodyLH; }
     }
@@ -1039,6 +1041,7 @@ function renderTwt(canvas, slide, index, s) {
   // Profile block top left (always present in Twitter)
   const profX=54, profY=110;
   const photoR=44;
+  const twtPs=s.profileSize||26, twtHs=Math.round(twtPs*0.77);
   drawGradientRing(ctx,profX+photoR,profY+photoR,photoR+4,photoR);
   const photo=s.brandPhoto&&imgCache['__brand__'];
   if(photo) drawCircleImg(ctx,photo,profX+photoR,profY+photoR,photoR);
@@ -1047,20 +1050,20 @@ function renderTwt(canvas, slide, index, s) {
     ctx.fillStyle='#aaa'; ctx.fill();
   }
   const tx=profX+photoR*2+18, ty0=profY+10;
-  ctx.font=`700 34px 'DM Sans', sans-serif`; ctx.textBaseline='top'; ctx.textAlign='left';
+  ctx.font=`700 ${twtPs}px 'DM Sans', sans-serif`; ctx.textBaseline='top'; ctx.textAlign='left';
   ctx.fillStyle='#1a2a3a';
   const name=s.brandName||'Nome';
   const nw=ctx.measureText(name).width;
   ctx.fillText(name,tx,ty0);
-  drawVerified(ctx,tx+nw+18,ty0+14,14);
-  ctx.font=`400 26px 'DM Sans', sans-serif`;
+  drawVerified(ctx,tx+nw+Math.round(twtPs*0.6),ty0+Math.round(twtPs*0.38),Math.round(twtPs*0.42));
+  ctx.font=`400 ${twtHs}px 'DM Sans', sans-serif`;
   ctx.fillStyle='#666';
   const handle=s.brandHandle?(s.brandHandle.startsWith('@')?s.brandHandle:'@'+s.brandHandle):'';
-  ctx.fillText(handle,tx,ty0+42);
+  ctx.fillText(handle,tx,ty0+Math.round(twtPs*1.25));
 
   // Content
   const pad=54, textW=W-pad*2;
-  let ty=profY+photoR*2+50;
+  let ty=profY+Math.max(photoR*2, Math.round(twtPs*1.77)+20)+20;
   const tf=s.titleFont==='Bebas Neue'?"'Bebas Neue'":s.titleFont==='DM Sans'?"'DM Sans'":s.titleFont;
   ctx.textBaseline='top'; ctx.textAlign='left';
   ctx.font=`700 ${s.titleSize}px ${tf}, sans-serif`; ctx.fillStyle='#1a2a3a';
@@ -1673,7 +1676,6 @@ function collectState() {
     settings: {
       brandName:    document.getElementById('brand-name').value,
       brandHandle:  document.getElementById('brand-handle').value,
-      brandPos:     document.getElementById('brand-pos').value,
       slideSize:    document.getElementById('slide-size').value,
       pillColor1:   document.getElementById('pill-color1').value,
       pillColor2:   document.getElementById('pill-color2').value,
@@ -1689,6 +1691,7 @@ function collectState() {
       copyright:    document.getElementById('copyright-text').value,
       arrasta:      document.getElementById('arrasta-text').value,
       ctaText:      document.getElementById('cta-text').value,
+      profileSize:  document.getElementById('profile-size').value,
       coverProfile: document.getElementById('cover-profile').value,
       footerId:     document.getElementById('footer-id').value,
     }
@@ -1707,7 +1710,6 @@ function applyState(state) {
   const cfg = state.settings || {};
   if (cfg.brandName   !== undefined) document.getElementById('brand-name').value    = cfg.brandName;
   if (cfg.brandHandle !== undefined) document.getElementById('brand-handle').value  = cfg.brandHandle;
-  if (cfg.brandPos    !== undefined) document.getElementById('brand-pos').value     = cfg.brandPos;
   if (cfg.slideSize   !== undefined) document.getElementById('slide-size').value    = cfg.slideSize;
   if (cfg.pillColor1  !== undefined) document.getElementById('pill-color1').value   = cfg.pillColor1;
   if (cfg.pillColor2  !== undefined) document.getElementById('pill-color2').value   = cfg.pillColor2;
@@ -1723,6 +1725,7 @@ function applyState(state) {
   if (cfg.copyright   !== undefined) document.getElementById('copyright-text').value= cfg.copyright;
   if (cfg.arrasta     !== undefined) document.getElementById('arrasta-text').value  = cfg.arrasta;
   if (cfg.ctaText     !== undefined) document.getElementById('cta-text').value      = cfg.ctaText;
+  if (cfg.profileSize  !== undefined) { document.getElementById('profile-size').value = cfg.profileSize; document.getElementById('ps-val').textContent = cfg.profileSize + 'px'; }
   if (cfg.coverProfile !== undefined) document.getElementById('cover-profile').value = cfg.coverProfile;
   if (cfg.footerId    !== undefined) document.getElementById('footer-id').value     = cfg.footerId;
 
