@@ -236,6 +236,22 @@ header{padding:14px 28px;flex-wrap:nowrap;}
       <div class="fg"><label>Nome</label><input type="text" id="brand-name" placeholder="Seu nome" oninput="debouncedRender()"></div>
       <div class="fg"><label>@</label><input type="text" id="brand-handle" placeholder="@seuhandle" oninput="debouncedRender()"></div>
       <div class="fg">
+        <label>Rodapé</label>
+        <select id="footer-id" onchange="renderAll()">
+          <option value="both">Nome + @</option>
+          <option value="handle">Só o @</option>
+          <option value="name">Só o nome</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>@ na capa</label>
+        <select id="cover-handle" onchange="renderCurrent()">
+          <option value="show">Visível</option>
+          <option value="subtle">Discreto</option>
+          <option value="hide">Oculto</option>
+        </select>
+      </div>
+      <div class="fg">
         <label>Posição do rodapé</label>
         <select id="brand-pos" onchange="renderCurrent()">
           <option value="left">Esquerdo</option>
@@ -349,7 +365,11 @@ header{padding:14px 28px;flex-wrap:nowrap;}
           <option value="abstract background, smooth gradients, bokeh, atmospheric, no text">Abstrato / Background</option>
         </select>
       </div>
-      <p class="hint" style="margin-top:6px">O prompt é gerado automaticamente a partir do título e texto de cada slide.</p>
+      <div class="lbl" style="margin-top:10px">Contexto Extra <span style="font-weight:400;color:var(--muted)">(opcional)</span></div>
+      <div class="fg">
+        <textarea id="ai-prompt-extra" rows="3" placeholder="Paleta de cores, cenário, personagem, estética... ex: tons de azul escuro, ambiente corporativo, mulher de terno" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:10px 12px;outline:none;resize:vertical;box-sizing:border-box"></textarea>
+        <p class="hint">Aplicado a todos os slides gerados nesta sessão.</p>
+      </div>
       <button class="btn btn-primary" id="btn-gen-current" onclick="generateCurrentImage()">✦ Gerar para Slide Atual</button>
       <button class="btn btn-secondary" id="btn-gen-all" onclick="generateAllImages()" style="margin-top:6px">⚡ Gerar para Todos os Slides</button>
       <div id="ai-batch-info" style="display:none;margin-top:10px">
@@ -516,6 +536,8 @@ function S() {
     bodySize: +document.getElementById('body-size').value,
     overlay: +document.getElementById('overlay').value / 100,
     showNum: document.getElementById('show-num').value === 'yes',
+    footerId: document.getElementById('footer-id').value,
+    coverHandle: document.getElementById('cover-handle').value,
     W: w, H: h
   };
 }
@@ -666,9 +688,14 @@ function drawFooter(ctx, W, H, s, isLast=false) {
   const outlineTxt = s.template === 'twt' ? '#222' : '#ddd';
 
   let x = 54;
-  const pw1 = drawGradPill(ctx, name, x, fy, pillH, fs, s.pillColor1, s.pillColor2);
-  x += pw1 + 18;
-  const pw2 = drawOutlinePill(ctx, handle, x, fy, pillH, fs, outlineCol, outlineTxt);
+  const fid = s.footerId || 'both';
+  if (fid !== 'handle' && name) {
+    const pw1 = drawGradPill(ctx, name, x, fy, pillH, fs, s.pillColor1, s.pillColor2);
+    x += pw1 + 18;
+  }
+  if (fid !== 'name' && handle) {
+    drawOutlinePill(ctx, handle, x, fy, pillH, fs, outlineCol, outlineTxt);
+  }
   
   ctx.textBaseline = 'middle';
   if (isLast) {
@@ -702,6 +729,7 @@ function drawProfileBlock(ctx, x, y, s, centered=false) {
 
   const name = s.brandName || '';
   const handle = s.brandHandle ? (s.brandHandle.startsWith('@')?s.brandHandle:'@'+s.brandHandle) : '';
+  const chv = s.coverHandle || 'show';
 
   if (centered) {
     // centered below photo
@@ -713,11 +741,13 @@ function drawProfileBlock(ctx, x, y, s, centered=false) {
     ctx.fillText(name, cx, ny);
     // verified badge
     drawVerified(ctx, cx + nw/2 + 24, ny + 16, 16);
-    ctx.font = `400 28px 'DM Sans', sans-serif`;
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.fillText(handle, cx, ny+44);
+    if (chv !== 'hide' && handle) {
+      ctx.font = `400 28px 'DM Sans', sans-serif`;
+      ctx.fillStyle = chv === 'subtle' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.6)';
+      ctx.fillText(handle, cx, ny+44);
+    }
     ctx.textAlign = 'left';
-    return photoR*2 + 18 + 44 + 32;
+    return chv === 'hide' ? photoR*2 + 18 + 44 : photoR*2 + 18 + 44 + 32;
   } else {
     // left-aligned, photo left, text right
     const tx = cx + photoR + 14;
@@ -729,9 +759,13 @@ function drawProfileBlock(ctx, x, y, s, centered=false) {
     const nw = ctx.measureText(name).width;
     ctx.fillText(name, tx, ny);
     drawVerified(ctx, tx + nw + 20, ny + 14, 14);
-    ctx.font = `400 26px 'DM Sans', sans-serif`;
-    ctx.fillStyle = s.template==='twt' ? '#555' : 'rgba(255,255,255,0.6)';
-    ctx.fillText(handle, tx, ny + 40);
+    if (chv !== 'hide' && handle) {
+      ctx.font = `400 26px 'DM Sans', sans-serif`;
+      ctx.fillStyle = chv === 'subtle'
+        ? (s.template==='twt' ? 'rgba(85,85,85,0.3)' : 'rgba(255,255,255,0.25)')
+        : (s.template==='twt' ? '#555' : 'rgba(255,255,255,0.6)');
+      ctx.fillText(handle, tx, ny + 40);
+    }
     return 0;
   }
 }
@@ -780,8 +814,7 @@ function renderMKT(canvas, slide, index, s) {
 
     // perfil sobe um pouco quando há corpo para dar espaço ao texto
     const profY = hasBody ? H*0.52 : H*0.6;
-    const profBlockH = 182; // retorno fixo de drawProfileBlock centrado (photoR*2+18+44+32)
-    drawProfileBlock(ctx, W/2, profY, s, true);
+    const profBlockH = drawProfileBlock(ctx, W/2, profY, s, true);
 
     // centraliza o bloco de texto no espaço abaixo do perfil
     const profBottom = profY + profBlockH;
@@ -934,7 +967,8 @@ function renderAlt(canvas, slide, index, s) {
       ctx.fillStyle='rgba(255,255,255,0.72)';
       for(let bl of slide.body.split('\n')){ const n=wrapText(ctx,bl,pad,ty,textW,coverBodyLH,'left'); ty+=n*coverBodyLH; }
     }
-    drawFooter(ctx,W,H,s,false);
+    const sAltCover = s.coverHandle === 'hide' ? {...s, brandHandle: ''} : s;
+    drawFooter(ctx,W,H,sAltCover,false);
   } else {
     // Image top ~50%, full bleed no radius, hard gradient fade to bg
     const img=slide.image && imgCache[slide.image];
@@ -1470,7 +1504,10 @@ function buildSlidePrompt(idx) {
 
   const realism = 'Photorealistic. Shot on professional camera (Canon EOS R5, 85mm lens). Real natural skin texture if people are present. Natural lighting. Hyperrealistic, 8K detail. No AI artifacts, no plastic skin, no uncanny valley.';
 
-  return `PURE VISUAL IMAGE ONLY — NO TEXT, NO LETTERS, NO WORDS ANYWHERE IN THE IMAGE. ${role} Carousel topic: "${carouselTheme}". ${slideDetail} Visual style: ${style}. Aspect ratio: ${arHint}. ${realism}`;
+  const extra = (document.getElementById('ai-prompt-extra').value || '').trim();
+  const extraClause = extra ? ` Additional visual context: ${extra}.` : '';
+
+  return `PURE VISUAL IMAGE ONLY — NO TEXT, NO LETTERS, NO WORDS ANYWHERE IN THE IMAGE. ${role} Carousel topic: "${carouselTheme}". ${slideDetail} Visual style: ${style}.${extraClause} Aspect ratio: ${arHint}. ${realism}`;
 }
 
 async function callImageAPI(key, model, prompt, slideIdx) {
@@ -1648,6 +1685,8 @@ function collectState() {
       copyright:    document.getElementById('copyright-text').value,
       arrasta:      document.getElementById('arrasta-text').value,
       ctaText:      document.getElementById('cta-text').value,
+      coverHandle:  document.getElementById('cover-handle').value,
+      footerId:     document.getElementById('footer-id').value,
     }
   };
 }
@@ -1680,6 +1719,8 @@ function applyState(state) {
   if (cfg.copyright   !== undefined) document.getElementById('copyright-text').value= cfg.copyright;
   if (cfg.arrasta     !== undefined) document.getElementById('arrasta-text').value  = cfg.arrasta;
   if (cfg.ctaText     !== undefined) document.getElementById('cta-text').value      = cfg.ctaText;
+  if (cfg.coverHandle !== undefined) document.getElementById('cover-handle').value  = cfg.coverHandle;
+  if (cfg.footerId    !== undefined) document.getElementById('footer-id').value     = cfg.footerId;
 
   if (state.brandPhoto) {
     brandPhoto = state.brandPhoto;
@@ -1774,7 +1815,7 @@ window.onload=()=>{
 
   // Auto-save on any settings input change
   document.querySelectorAll('input,select,textarea').forEach(el => {
-    if (el.id === 'ai-key' || el.id === 'import-file' || el.id === 'ai-model-custom') return;
+    if (el.id === 'ai-key' || el.id === 'import-file' || el.id === 'ai-model-custom' || el.id === 'ai-prompt-extra') return;
     el.addEventListener('input', autoSave);
     el.addEventListener('change', autoSave);
   });
