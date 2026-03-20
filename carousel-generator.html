@@ -519,6 +519,7 @@ function S() {
     poweredBy: document.getElementById('powered-by').value,
     copyright: document.getElementById('copyright-text').value,
     arrasta: document.getElementById('arrasta-text').value || 'Arrasta para o lado >',
+    totalSlides: slides.length,
     pillColor1: document.getElementById('pill-color1').value,
     pillColor2: document.getElementById('pill-color2').value,
     titleColor: document.getElementById('title-color').value,
@@ -696,7 +697,7 @@ function drawFooter(ctx, W, H, s, isLast=false) {
     ctx.font = `700 ${fs}px 'DM Sans', sans-serif`;
     const ctaW = ctx.measureText(s.ctaText).width + pillH*1.0 + fs*1.0;
     drawCtaPill(ctx, s.ctaText, W - 54 - ctaW, fy, pillH, fs);
-  } else {
+  } else if (s.totalSlides > 1) {
     ctx.font = `500 ${fs-2}px 'DM Sans', sans-serif`;
     ctx.fillStyle = s.template==='twt' ? '#888' : '#555';
     ctx.textAlign = 'right';
@@ -842,12 +843,14 @@ function renderMKT(canvas, slide, index, s) {
       }
     }
 
-    // Arrasta
-    ctx.font=`500 24px 'DM Sans', sans-serif`;
-    ctx.fillStyle='rgba(255,255,255,0.5)';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(s.arrasta, W/2, H-36);
-    ctx.textAlign='left';
+    // Arrasta (só em carrosséis com mais de 1 slide)
+    if (s.totalSlides > 1) {
+      ctx.font=`500 24px 'DM Sans', sans-serif`;
+      ctx.fillStyle='rgba(255,255,255,0.5)';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(s.arrasta, W/2, H-36);
+      ctx.textAlign='left';
+    }
   } else {
     // Internal / CTA
     ctx.fillStyle = s.bgColor; ctx.fillRect(0,0,W,H);
@@ -1102,7 +1105,7 @@ function renderTwt(canvas, slide, index, s) {
     ctx.font=`700 ${fs}px 'DM Sans', sans-serif`;
     const ctaW=ctx.measureText(s.ctaText).width+pillH*1.0+fs*1.0;
     drawCtaPill(ctx,s.ctaText,W-54-ctaW,fy,pillH,fs);
-  } else {
+  } else if(s.totalSlides > 1) {
     ctx.font=`500 ${fs-2}px 'DM Sans', sans-serif`;
     ctx.fillStyle='#999'; ctx.textAlign='right'; ctx.textBaseline='middle';
     ctx.fillText(s.arrasta,W-54,fy); ctx.textAlign='left';
