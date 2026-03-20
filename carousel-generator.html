@@ -244,10 +244,10 @@ header{padding:14px 28px;flex-wrap:nowrap;}
         </select>
       </div>
       <div class="fg">
-        <label>@ na capa</label>
-        <select id="cover-handle" onchange="renderCurrent()">
-          <option value="show">Visível</option>
-          <option value="subtle">Discreto</option>
+        <label>Perfil na capa</label>
+        <select id="cover-profile" onchange="renderCurrent()">
+          <option value="full">Completo (foto + nome + @)</option>
+          <option value="photo">Só a foto</option>
           <option value="hide">Oculto</option>
         </select>
       </div>
@@ -537,7 +537,7 @@ function S() {
     overlay: +document.getElementById('overlay').value / 100,
     showNum: document.getElementById('show-num').value === 'yes',
     footerId: document.getElementById('footer-id').value,
-    coverHandle: document.getElementById('cover-handle').value,
+    coverProfile: document.getElementById('cover-profile').value,
     W: w, H: h
   };
 }
@@ -714,10 +714,15 @@ function drawFooter(ctx, W, H, s, isLast=false) {
 // ── PROFILE BLOCK (inline, for cover and twitter) ──
 function drawProfileBlock(ctx, x, y, s, centered=false) {
   const photoR = 44;
+  const cpv = s.coverProfile || 'full';
+
+  // 'hide' — nada desenhado
+  if (cpv === 'hide') return 0;
+
   const photo = s.brandPhoto && imgCache['__brand__'];
   const cx = centered ? x : x + photoR;
-  
-  // Gradient ring
+
+  // Foto sempre desenhada (full ou photo)
   drawGradientRing(ctx, cx, y+photoR, photoR+4, photoR);
   if (photo) drawCircleImg(ctx, photo, cx, y+photoR, photoR);
   else {
@@ -727,43 +732,43 @@ function drawProfileBlock(ctx, x, y, s, centered=false) {
     ctx.fillText('👤', cx, y+photoR);
   }
 
+  // 'photo' — só a foto, sem texto
+  if (cpv === 'photo') {
+    ctx.textAlign = 'left';
+    return photoR * 2;
+  }
+
+  // 'full' — foto + nome + @
   const name = s.brandName || '';
   const handle = s.brandHandle ? (s.brandHandle.startsWith('@')?s.brandHandle:'@'+s.brandHandle) : '';
-  const chv = s.coverHandle || 'show';
 
   if (centered) {
-    // centered below photo
     const ny = y + photoR*2 + 18;
     ctx.font = `700 38px 'DM Sans', sans-serif`;
     ctx.textBaseline = 'top'; ctx.textAlign = 'center';
     ctx.fillStyle = 'white';
     const nw = ctx.measureText(name).width;
     ctx.fillText(name, cx, ny);
-    // verified badge
     drawVerified(ctx, cx + nw/2 + 24, ny + 16, 16);
-    if (chv !== 'hide' && handle) {
+    if (handle) {
       ctx.font = `400 28px 'DM Sans', sans-serif`;
-      ctx.fillStyle = chv === 'subtle' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.6)';
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
       ctx.fillText(handle, cx, ny+44);
     }
     ctx.textAlign = 'left';
-    return chv === 'hide' ? photoR*2 + 18 + 44 : photoR*2 + 18 + 44 + 32;
+    return photoR*2 + 18 + 44 + 32;
   } else {
-    // left-aligned, photo left, text right
     const tx = cx + photoR + 14;
     const ny = y + 6;
     ctx.font = `700 34px 'DM Sans', sans-serif`;
     ctx.textBaseline = 'top'; ctx.textAlign = 'left';
-    const textCol = s.template==='twt' ? '#1a2a3a' : 'white';
-    ctx.fillStyle = textCol;
+    ctx.fillStyle = s.template==='twt' ? '#1a2a3a' : 'white';
     const nw = ctx.measureText(name).width;
     ctx.fillText(name, tx, ny);
     drawVerified(ctx, tx + nw + 20, ny + 14, 14);
-    if (chv !== 'hide' && handle) {
+    if (handle) {
       ctx.font = `400 26px 'DM Sans', sans-serif`;
-      ctx.fillStyle = chv === 'subtle'
-        ? (s.template==='twt' ? 'rgba(85,85,85,0.3)' : 'rgba(255,255,255,0.25)')
-        : (s.template==='twt' ? '#555' : 'rgba(255,255,255,0.6)');
+      ctx.fillStyle = s.template==='twt' ? '#555' : 'rgba(255,255,255,0.6)';
       ctx.fillText(handle, tx, ny + 40);
     }
     return 0;
@@ -967,8 +972,7 @@ function renderAlt(canvas, slide, index, s) {
       ctx.fillStyle='rgba(255,255,255,0.72)';
       for(let bl of slide.body.split('\n')){ const n=wrapText(ctx,bl,pad,ty,textW,coverBodyLH,'left'); ty+=n*coverBodyLH; }
     }
-    const sAltCover = s.coverHandle === 'hide' ? {...s, brandHandle: ''} : s;
-    drawFooter(ctx,W,H,sAltCover,false);
+    drawFooter(ctx,W,H,s,false);
   } else {
     // Image top ~50%, full bleed no radius, hard gradient fade to bg
     const img=slide.image && imgCache[slide.image];
@@ -1685,7 +1689,7 @@ function collectState() {
       copyright:    document.getElementById('copyright-text').value,
       arrasta:      document.getElementById('arrasta-text').value,
       ctaText:      document.getElementById('cta-text').value,
-      coverHandle:  document.getElementById('cover-handle').value,
+      coverProfile: document.getElementById('cover-profile').value,
       footerId:     document.getElementById('footer-id').value,
     }
   };
@@ -1719,7 +1723,7 @@ function applyState(state) {
   if (cfg.copyright   !== undefined) document.getElementById('copyright-text').value= cfg.copyright;
   if (cfg.arrasta     !== undefined) document.getElementById('arrasta-text').value  = cfg.arrasta;
   if (cfg.ctaText     !== undefined) document.getElementById('cta-text').value      = cfg.ctaText;
-  if (cfg.coverHandle !== undefined) document.getElementById('cover-handle').value  = cfg.coverHandle;
+  if (cfg.coverProfile !== undefined) document.getElementById('cover-profile').value = cfg.coverProfile;
   if (cfg.footerId    !== undefined) document.getElementById('footer-id').value     = cfg.footerId;
 
   if (state.brandPhoto) {
