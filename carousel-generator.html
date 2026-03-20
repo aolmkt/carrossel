@@ -1362,48 +1362,72 @@ function makeDlURL(dataURL) {
   catch(e) { return dataURL; }
 }
 
+function canShareFiles() {
+  if (!navigator.canShare) return false;
+  try { return navigator.canShare({ files: [new File([''], 't.png', { type:'image/png' })] }); }
+  catch(e) { return false; }
+}
+
+async function shareImages(dataURLs, names) {
+  const files = dataURLs.map((url, i) => new File([dataURLtoBlob(url)], names[i], { type:'image/png' }));
+  await navigator.share({ files });
+}
+
+function makeBtnStyle(primary){
+  return primary
+    ? 'background:linear-gradient(135deg,#e8294a,#b01230);color:white;border:none;border-radius:7px;padding:8px 16px;font-family:DM Sans,sans-serif;font-weight:700;font-size:12px;cursor:pointer;'
+    : 'background:#222;color:#aaa;border:1px solid #333;border-radius:7px;padding:7px 14px;font-family:DM Sans,sans-serif;font-weight:700;font-size:12px;cursor:pointer;';
+}
+
 function showModal(urls){
   const old=document.getElementById('exp-modal'); if(old)old.remove();
+  const iosShare = canShareFiles();
   const modal=document.createElement('div');
   modal.id='exp-modal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:flex;flex-direction:column;overflow:hidden;';
   const bar=document.createElement('div');
   bar.style.cssText='flex-shrink:0;display:flex;align-items:center;gap:12px;padding:13px 20px;background:#111;border-bottom:1px solid #222;flex-wrap:wrap;';
-  
+
   const title=document.createElement('span');
   title.style.cssText="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:#fff;margin-right:auto;";
   title.textContent=`${urls.length} Slide${urls.length>1?'s':''} Prontos`;
   bar.appendChild(title);
 
   if(urls.length>1){
-    const dlAll=document.createElement('button');
-    dlAll.textContent='⬇ Baixar Todos de Uma Vez';
-    dlAll.style.cssText='background:linear-gradient(135deg,#e8294a,#b01230);color:white;border:none;border-radius:7px;padding:8px 16px;font-family:DM Sans,sans-serif;font-weight:700;font-size:12px;cursor:pointer;';
-    dlAll.onclick=()=>{
-      urls.forEach((url,i)=>{
-        setTimeout(()=>{
-          const a=document.createElement('a');
-          a.href=makeDlURL(url); a.download=`slide_${i+1}.png`;
-          document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }, i*120);
-      });
-      dlAll.textContent='✓ Downloads iniciados!';
-      setTimeout(()=>{dlAll.textContent='⬇ Baixar Todos de Uma Vez';},2500);
-    };
-    bar.appendChild(dlAll);
+    const allBtn=document.createElement('button');
+    allBtn.style.cssText=makeBtnStyle(true);
+    if(iosShare){
+      allBtn.textContent='📤 Salvar Todos nas Fotos';
+      allBtn.onclick=async()=>{
+        try {
+          allBtn.disabled=true; allBtn.textContent='⏳ Aguarde...';
+          const names=urls.map((_,i)=>`slide_${i+1}.png`);
+          await shareImages(urls, names);
+        } catch(e){ if(e.name!=='AbortError') alert('Erro ao compartilhar: '+e.message); }
+        finally { allBtn.disabled=false; allBtn.textContent='📤 Salvar Todos nas Fotos'; }
+      };
+    } else {
+      allBtn.textContent='⬇ Baixar Todos de Uma Vez';
+      allBtn.onclick=()=>{
+        urls.forEach((url,i)=>{
+          setTimeout(()=>{
+            const a=document.createElement('a');
+            a.href=makeDlURL(url); a.download=`slide_${i+1}.png`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          }, i*120);
+        });
+        allBtn.textContent='✓ Downloads iniciados!';
+        setTimeout(()=>{ allBtn.textContent='⬇ Baixar Todos de Uma Vez'; },2500);
+      };
+    }
+    bar.appendChild(allBtn);
   }
 
   const cl=document.createElement('button');
-  cl.textContent='✕ Fechar';
-  cl.style.cssText='background:#222;color:#aaa;border:1px solid #333;border-radius:7px;padding:7px 14px;font-family:DM Sans,sans-serif;font-weight:700;font-size:12px;cursor:pointer;';
+  cl.textContent='✕ Fechar'; cl.style.cssText=makeBtnStyle(false);
   cl.onclick=()=>{
-    // Revoke all blob URLs to avoid memory leaks
-    modal.querySelectorAll('img').forEach(img => {
-      if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
-    });
-    modal.querySelectorAll('a[href]').forEach(a => {
-      if (a.href && a.href.startsWith('blob:')) URL.revokeObjectURL(a.href);
-    });
+    modal.querySelectorAll('img').forEach(img=>{ if(img.src.startsWith('blob:')) URL.revokeObjectURL(img.src); });
+    modal.querySelectorAll('a[href]').forEach(a=>{ if(a.href.startsWith('blob:')) URL.revokeObjectURL(a.href); });
     modal.remove();
   };
   bar.appendChild(cl);
@@ -1420,17 +1444,33 @@ function showModal(urls){
     const lbl=document.createElement('span');
     lbl.style.cssText='font-size:11px;font-weight:700;color:#666;font-family:DM Sans,sans-serif';
     lbl.textContent=tag;
-    const dl=document.createElement('a');
-    const blobURL=makeDlURL(url);
-    dl.href=blobURL; dl.download=`slide_${i+1}.png`;
-    dl.style.cssText='font-size:11px;font-weight:700;color:#e8294a;font-family:DM Sans,sans-serif;text-decoration:none;padding:3px 8px;border:1px solid #e8294a;border-radius:4px;';
-    dl.textContent='⬇ Baixar';
-    ch.appendChild(lbl); ch.appendChild(dl);
+
+    if(iosShare){
+      const shareBtn=document.createElement('button');
+      shareBtn.textContent='📤 Salvar nas Fotos';
+      shareBtn.style.cssText='font-size:11px;font-weight:700;color:#e8294a;font-family:DM Sans,sans-serif;background:none;border:1px solid #e8294a;border-radius:4px;padding:3px 8px;cursor:pointer;';
+      shareBtn.onclick=async()=>{
+        try {
+          shareBtn.disabled=true; shareBtn.textContent='⏳...';
+          await shareImages([url], [`slide_${i+1}.png`]);
+        } catch(e){ if(e.name!=='AbortError') alert('Erro: '+e.message); }
+        finally { shareBtn.disabled=false; shareBtn.textContent='📤 Salvar nas Fotos'; }
+      };
+      ch.appendChild(lbl); ch.appendChild(shareBtn);
+    } else {
+      const dl=document.createElement('a');
+      const blobURL=makeDlURL(url);
+      dl.href=blobURL; dl.download=`slide_${i+1}.png`;
+      dl.style.cssText='font-size:11px;font-weight:700;color:#e8294a;font-family:DM Sans,sans-serif;text-decoration:none;padding:3px 8px;border:1px solid #e8294a;border-radius:4px;';
+      dl.textContent='⬇ Baixar';
+      ch.appendChild(lbl); ch.appendChild(dl);
+    }
+
     const img=document.createElement('img');
     img.style.cssText='width:100%;display:block;';
     card.appendChild(ch); card.appendChild(img);
     body.appendChild(card);
-    requestAnimationFrame(()=>{img.src=url;});
+    requestAnimationFrame(()=>{ img.src=url; });
   });
   modal.appendChild(bar); modal.appendChild(body);
   document.body.appendChild(modal);
